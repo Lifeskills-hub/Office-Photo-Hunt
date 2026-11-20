@@ -1,94 +1,95 @@
-/* Office Photo Hunt - clean UI enhancements v8.7
-   Load AFTER app.js and winner-patch.js.
-   Keeps the existing game logic untouched.
-*/
-(() => {
+(function () {
   'use strict';
 
-  const $ = (selector) => document.querySelector(selector);
-  let busyCount = 0;
+  var busyCount = 0;
+
+  function find(selector) {
+    return document.querySelector(selector);
+  }
 
   function ensureOverlay() {
-    let overlay = $('#ophLoading');
+    var overlay = find('#ophLoading');
 
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'ophLoading';
       overlay.className = 'oph-loading';
       overlay.hidden = true;
-      overlay.innerHTML = `
-        <div class="oph-loading-card" role="status" aria-live="polite" aria-busy="true">
-          <div class="oph-spinner" aria-hidden="true"></div>
-          <strong id="ophLoadingText">Loading…</strong>
-          <small>Please wait. Do not close or refresh this page.</small>
-        </div>`;
+      overlay.innerHTML = '<div class="oph-loading-card" role="status" aria-live="polite" aria-busy="true">' +
+        '<div class="oph-spinner" aria-hidden="true"></div>' +
+        '<strong id="ophLoadingText">Loading...</strong>' +
+        '<small>Please wait. Do not close or refresh this page.</small>' +
+        '</div>';
     }
 
-    /* Keep overlay directly under body to avoid transformed-parent offsets. */
-    if (overlay.parentElement !== document.body) {
+    if (overlay.parentNode !== document.body) {
       document.body.appendChild(overlay);
     }
 
     return overlay;
   }
 
-  function actionText(action) {
-    const labels = {
-      createGame: 'Creating game…',
-      join: 'Joining game…',
-      assignTeams: 'Randomly assigning teams…',
-      uploadPhoto: 'Uploading photo…',
-      ready: 'Preparing photo hunt…',
-      saveScore: 'Saving match score…'
+  function getLoadingText(action) {
+    var labels = {
+      createGame: 'Creating game...',
+      join: 'Joining game...',
+      assignTeams: 'Randomly assigning teams...',
+      uploadPhoto: 'Uploading photo...',
+      ready: 'Preparing photo hunt...',
+      saveScore: 'Saving match score...'
     };
-    return labels[action] || 'Loading…';
+
+    return labels[action] || 'Loading...';
   }
 
   function showLoading(text) {
-    const overlay = ensureOverlay();
+    var overlay = ensureOverlay();
+    var label = find('#ophLoadingText');
+
     busyCount += 1;
 
-    const label = $('#ophLoadingText');
-    if (label) label.textContent = text || 'Loading…';
+    if (label) {
+      label.textContent = text || 'Loading...';
+    }
 
     overlay.hidden = false;
   }
 
   function hideLoading() {
+    var overlay = find('#ophLoading');
+
     busyCount = Math.max(0, busyCount - 1);
-    const overlay = $('#ophLoading');
 
     if (overlay && busyCount === 0) {
       overlay.hidden = true;
     }
   }
 
-  window.OPH_UI = { showLoading, hideLoading };
+  window.OPH_UI = {
+    showLoading: showLoading,
+    hideLoading: hideLoading
+  };
 
-  /*
-    Wrap the existing API function from app.js.
-    Read-only polling remains silent; player actions show the loading overlay.
-  */
   if (typeof api === 'function') {
-    const originalApi = api;
-    const loadingActions = new Set([
-      'createGame',
-      'join',
-      'assignTeams',
-      'uploadPhoto',
-      'ready',
-      'saveScore'
-    ]);
+    var originalApi = api;
+    var loadingActions = {
+      createGame: true,
+      join: true,
+      assignTeams: true,
+      uploadPhoto: true,
+      ready: true,
+      saveScore: true
+    };
 
-    api = async function (action, payload = {}) {
-      const useLoading = loadingActions.has(action);
+    api = async function (action, payload) {
+      var useLoading = loadingActions[action] === true;
 
       if (useLoading) {
-        showLoading(actionText(action));
+        showLoading(getLoadingText(action));
       }
 
       try {
-        return await originalApi(action, payload);
+        return await originalApi(action, payload || {});
       } finally {
         if (useLoading) {
           hideLoading();
@@ -98,14 +99,19 @@
   }
 
   function updateHostButton() {
+    var button;
+    var note;
+
     if (typeof G === 'undefined' || !G || G.phase !== 'LOBBY') {
       return;
     }
 
-    const button = $('#assignBtn');
-    if (!button) return;
+    button = find('#assignBtn');
 
-    /* Always show it. Host can press it; everyone else sees a locked version. */
+    if (!button) {
+      return;
+    }
+
     button.hidden = false;
 
     if (G.isHost === true) {
@@ -115,10 +121,11 @@
     } else {
       button.disabled = true;
       button.classList.add('host-locked');
-      button.textContent = '🔒 Close joining & randomly assign teams';
+      button.textContent = 'LOCKED - Close joining & randomly assign teams';
     }
 
-    const note = $('#hostPermissionNote');
+    note = find('#hostPermissionNote');
+
     if (note) {
       note.textContent = G.isHost === true
         ? 'You created this game. Close joining when everyone has arrived.'
@@ -126,40 +133,54 @@
     }
   }
 
-  function readyStorageKey() {
-    if (typeof S === 'undefined' || !S || !S.gameId) return null;
+  function getReadyKey() {
+    if (typeof S === 'undefined' || !S || !S.gameId) {
+      return null;
+    }
+
     return 'ophTeamReady:' + S.gameId;
   }
 
   function updateReadyButton() {
-    if (typeof G === 'undefined' || !G) return;
+    var button;
+    var key;
+    var submitted;
 
-    const button = $('#readyBtn');
-    if (!button) return;
-
-    const key = readyStorageKey();
-
-    if (G.phase !== 'TEAM') {
-      if (key) localStorage.removeItem(key);
+    if (typeof G === 'undefined' || !G) {
       return;
     }
 
-    const submitted = key && localStorage.getItem(key) === '1';
+    button = find('#readyBtn');
+
+    if (!button) {
+      return;
+    }
+
+    key = getReadyKey();
+
+    if (G.phase !== 'TEAM') {
+      if (key) {
+        localStorage.removeItem(key);
+      }
+      return;
+    }
+
+    submitted = key && localStorage.getItem(key) === '1';
 
     if (submitted) {
       button.classList.add('ready-submitted');
       button.disabled = true;
-      button.textContent = '✓ 5 photos ready — Waiting for other teams…';
+      button.textContent = '5 photos ready - Waiting for other teams...';
     }
   }
 
-  /*
-    Capture the Ready click before app.js handles it.
-    Store the green state only when five server-known photo records exist.
-  */
-  document.addEventListener('click', (event) => {
-    const button = event.target.closest('#readyBtn');
-    if (!button || button.disabled) return;
+  document.addEventListener('click', function (event) {
+    var button = event.target.closest ? event.target.closest('#readyBtn') : null;
+    var key;
+
+    if (!button || button.disabled) {
+      return;
+    }
 
     if (
       typeof G !== 'undefined' &&
@@ -167,20 +188,22 @@
       Array.isArray(G.myPhotos) &&
       G.myPhotos.length === 5
     ) {
-      const key = readyStorageKey();
-      if (key) localStorage.setItem(key, '1');
+      key = getReadyKey();
+
+      if (key) {
+        localStorage.setItem(key, '1');
+      }
 
       button.classList.add('ready-submitted');
       button.disabled = true;
-      button.textContent = '✓ 5 photos ready — Waiting for other teams…';
+      button.textContent = '5 photos ready - Waiting for other teams...';
     }
   }, true);
 
   ensureOverlay();
 
-  /* Re-apply UI state after app.js background refreshes/re-renders. */
-  setInterval(() => {
+  window.setInterval(function () {
     updateHostButton();
     updateReadyButton();
   }, 250);
-})();
+}());
