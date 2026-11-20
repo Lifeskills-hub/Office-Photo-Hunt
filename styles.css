@@ -1,1 +1,262 @@
-:root{--blue:#174ea6;--bg:#f2f6fc;--green:#15803d;--text:#14213d}*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:13px 17px;background:var(--blue);color:#fff}h1{font-size:1.2rem;margin:0}main{max-width:900px;margin:auto;padding:16px}.screen{display:none}.screen.active{display:block}.hero{padding:20px 5px}.grid{display:grid;gap:16px}.card{background:#fff;border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:0 8px 25px #2342  }label{display:block;font-weight:700;margin:12px 0}input{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:10px;margin-top:5px;font:inherit}button,.camera{display:block;width:100%;padding:13px;border:0;border-radius:11px;background:#1760d8;color:#fff;font-weight:800;font:inherit;text-align:center;margin-top:10px}.camera input{position:absolute;opacity:0;pointer-events:none}button:disabled{background:#98a2b3}.secondary{background:#e8f0ff;color:#174ea6}.center{text-align:center}.code{font-size:2.5rem;font-weight:900;letter-spacing:.15em;color:#174ea6}.badge,.chip{display:inline-block;padding:7px 10px;border-radius:99px;background:#e8f0ff;color:#174ea6;font-weight:800;margin:3px}.row{display:flex;justify-content:space-between;align-items:center}.photo-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.photo-card{border:1px solid #d9e0ea;border-radius:14px;overflow:hidden;background:#f8fafc}.photo-card img,.placeholder{width:100%;aspect-ratio:1;object-fit:cover;display:grid;place-items:center}.placeholder{font-size:2rem}.photo-info{padding:10px}.score{font-size:1.3rem;color:var(--green);font-weight:900}.board-row{display:grid;grid-template-columns:35px 1fr auto;gap:10px;padding:10px;border-bottom:1px solid #e5e7eb}.modal{position:fixed;inset:0;background:#000b;padding:15px;overflow:auto;z-index:20}.modal-card{position:relative;max-width:520px;margin:auto;background:#fff;border-radius:18px;padding:18px}.close{position:absolute;right:10px;top:5px;width:42px;background:#e8edf5;color:#111;font-size:1.4rem}.large-preview{width:100%;max-height:38vh;object-fit:contain;background:#111;border-radius:12px}#matchResult{text-align:center;font-size:1.35rem;font-weight:900;padding:15px}#toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:11px 15px;border-radius:10px;z-index:30}#gameQr img{margin:10px auto}@media(min-width:680px){.grid{grid-template-columns:1fr 1fr}.photo-grid{grid-template-columns:repeat(5,1fr)}}
+:root {
+  --blue: #174ea6;
+  --bg: #f2f6fc;
+  --green: #15803d;
+  --text: #14213d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  max-width: 100%;
+  overflow-x: clip;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 13px 17px;
+  background: var(--blue);
+  color: #fff;
+}
+
+h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+main {
+  max-width: 900px;
+  margin: auto;
+  padding: 16px;
+}
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+.hero {
+  padding: 20px 5px;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 25px #2342;
+  min-width: 0;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin: 12px 0;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  margin-top: 5px;
+  font: inherit;
+}
+
+button,
+.camera {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  border: 0;
+  border-radius: 11px;
+  background: #1760d8;
+  color: #fff;
+  font-weight: 800;
+  font: inherit;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.camera input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+button:disabled {
+  background: #98a2b3;
+}
+
+.secondary {
+  background: #e8f0ff;
+  color: #174ea6;
+}
+
+.center {
+  text-align: center;
+}
+
+.code {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: .15em;
+  color: #174ea6;
+}
+
+.badge,
+.chip {
+  display: inline-block;
+  padding: 7px 10px;
+  border-radius: 99px;
+  background: #e8f0ff;
+  color: #174ea6;
+  font-weight: 800;
+  margin: 3px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 11px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.photo-card {
+  border: 1px solid #d9e0ea;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8fafc;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.photo-card img,
+.placeholder {
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+}
+
+.placeholder {
+  font-size: 2rem;
+}
+
+.photo-info {
+  padding: 10px;
+  min-width: 0;
+}
+
+.score {
+  font-size: 1.3rem;
+  color: var(--green);
+  font-weight: 900;
+}
+
+.board-row {
+  display: grid;
+  grid-template-columns: 35px 1fr auto;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: #000b;
+  padding: 15px;
+  overflow: auto;
+  z-index: 20;
+}
+
+.modal-card {
+  position: relative;
+  max-width: 520px;
+  margin: auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.close {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  width: 42px;
+  background: #e8edf5;
+  color: #111;
+  font-size: 1.4rem;
+}
+
+.large-preview {
+  width: 100%;
+  max-height: 38vh;
+  object-fit: contain;
+  background: #111;
+  border-radius: 12px;
+}
+
+#matchResult {
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 900;
+  padding: 15px;
+}
+
+#toast {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  color: #fff;
+  padding: 11px 15px;
+  border-radius: 10px;
+  z-index: 30;
+}
+
+#gameQr img {
+  margin: 10px auto;
+}
+
+@media (min-width: 680px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
