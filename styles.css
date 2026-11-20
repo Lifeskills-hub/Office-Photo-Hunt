@@ -148,11 +148,10 @@ button.ready-submitted:disabled {
   align-items: center;
 }
 
-/* 1 card per row on phones, 2 on medium screens, 5 on desktop */
 .photo-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
   max-width: 100%;
 }
@@ -166,23 +165,28 @@ button.ready-submitted:disabled {
   max-width: 100%;
 }
 
-.photo-card img,
-.placeholder {
+/* Only show image preview when not [hidden] */
+.photo-card img:not([hidden]) {
+  display: block;
   width: 100%;
   max-width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  display: grid;
-  place-items: center;
 }
 
-.placeholder {
-  font-size: 2rem;
+/* Keep empty placeholder hidden so un-uploaded cards stay compact */
+.photo-card .placeholder {
+  display: none !important;
 }
 
 .photo-info {
   padding: 12px;
   min-width: 0;
+}
+
+.photo-info .camera {
+  margin-top: 8px;
+  padding: 10px 12px;
 }
 
 .score {
