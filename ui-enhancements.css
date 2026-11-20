@@ -1,34 +1,61 @@
-/* Office Photo Hunt UI enhancements v8.2 */
+/* Office Photo Hunt UI enhancements v8.3 - loading overlay centering fix */
+
+/* Hidden state */
 .oph-loading[hidden] {
   display: none !important;
 }
 
+/*
+  IMPORTANT:
+  Centre the CARD with the overlay itself.
+  Do not position the card with top/right/bottom/left + margin:auto.
+  That combination can be offset on mobile browsers when the visual viewport
+  changes because of the address bar, keyboard or standalone/PWA chrome.
+*/
 .oph-loading {
   position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  width: auto !important;
-  height: auto !important;
+  inset: 0 !important;
   z-index: 99999 !important;
-  background: rgba(10, 20, 38, .68);
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100dvh !important;
+
   margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden;
+  padding:
+    max(16px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left)) !important;
+
+  overflow: hidden !important;
+  background: rgba(10, 20, 38, .68);
+  box-sizing: border-box !important;
 }
 
 .oph-loading-card {
-  position: fixed !important;
-  top: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  margin: auto !important;
-  width: 300px !important;
-  max-width: calc(100% - 32px) !important;
-  height: fit-content !important;
+  /* Card stays in normal flex layout. This is the key fix. */
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+
+  width: min(320px, 100%) !important;
+  max-width: 320px !important;
+  height: auto !important;
+  max-height: calc(100dvh - 32px) !important;
+
+  margin: 0 !important;
   transform: none !important;
+
+  overflow: auto;
+  box-sizing: border-box !important;
   background: #fff !important;
   color: #14213d !important;
   border-radius: 18px;
@@ -52,7 +79,7 @@
 .oph-spinner {
   width: 48px;
   height: 48px;
-  margin: auto;
+  margin: 0 auto;
   border: 5px solid #dbe7fb;
   border-top-color: #1760d8;
   border-radius: 50%;
@@ -60,9 +87,7 @@
 }
 
 @keyframes ophSpin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 #assignBtn.host-locked,
@@ -81,9 +106,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .oph-spinner {
-    animation-duration: 1.8s;
-  }
+  .oph-spinner { animation-duration: 1.8s; }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -91,7 +114,6 @@
     background: #172033 !important;
     color: #f8fafc !important;
   }
-
   .oph-loading-card small,
   .host-permission-note {
     color: #98a2b3;
