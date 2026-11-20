@@ -1,142 +1,96 @@
-/* Office Photo Hunt UI enhancements v8.2
-   Load AFTER app.js and winner-patch.js.
-   Adds global loading overlay and host/non-host assignment-button states.
-*/
-(() => {
-  const $ = s => document.querySelector(s);
-  let busyCount = 0;
+/* Office Photo Hunt UI enhancements v8.2 */
+.oph-loading[hidden] {
+  display: none !important;
+}
 
-  function ensureOverlay() {
-    if ($('#ophLoading')) return;
-    const el = document.createElement('div');
-    el.id = 'ophLoading';
-    el.className = 'oph-loading';
-    el.hidden = true;
-    el.innerHTML = `
-      <div class="oph-loading-card" role="status" aria-live="polite" aria-busy="true">
-        <div class="oph-spinner" aria-hidden="true"></div>
-        <strong id="ophLoadingText">Loading…</strong>
-        <small>Please wait. Do not close or refresh this page.</small>
-      </div>`;
-    document.body.appendChild(el);
+.oph-loading {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100dvh !important;
+  z-index: 9999 !important;
+  background: rgba(10, 20, 38, .64);
+  display: grid !important;
+  place-items: center !important;
+  padding: 20px;
+  margin: 0 !important;
+  overflow: hidden;
+  backdrop-filter: blur(2px);
+}
+
+.oph-loading-card {
+  width: min(320px, calc(100vw - 40px));
+  max-width: 100%;
+  background: #fff;
+  color: #14213d;
+  border-radius: 18px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .28);
+  margin: 0 !important;
+  transform: none !important;
+}
+
+.oph-loading-card strong {
+  display: block;
+  font-size: 1.15rem;
+  margin: 12px 0 5px;
+}
+
+.oph-loading-card small {
+  display: block;
+  color: #667085;
+  line-height: 1.4;
+}
+
+.oph-spinner {
+  width: 48px;
+  height: 48px;
+  margin: auto;
+  border: 5px solid #dbe7fb;
+  border-top-color: #1760d8;
+  border-radius: 50%;
+  animation: ophSpin .8s linear infinite;
+}
+
+@keyframes ophSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#assignBtn.host-locked,
+#assignBtn:disabled {
+  background: #98a2b3 !important;
+  color: #f8fafc !important;
+  cursor: not-allowed;
+  opacity: .82;
+}
+
+.host-permission-note {
+  margin: 8px 0 0;
+  color: #667085;
+  font-size: .88rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oph-spinner {
+    animation-duration: 1.8s;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .oph-loading-card {
+    background: #172033;
+    color: #f8fafc;
   }
 
-  function loadingText(action) {
-    return ({
-      createGame: 'Creating game…',
-      join: 'Joining game…',
-      assignTeams: 'Randomly assigning teams…',
-      uploadPhoto: 'Uploading photo…',
-      ready: 'Preparing photo hunt…',
-      saveScore: 'Saving match score…'
-    })[action] || 'Loading…';
+  .oph-loading-card small,
+  .host-permission-note {
+    color: #98a2b3;
   }
+}
+```[cite: 2]
 
-  function positionCard() {
-    const card = $('#ophLoading .oph-loading-card');
-    if (!card) return;
-    const vv = window.visualViewport;
-    if (vv) {
-      const cx = vv.offsetLeft + vv.width / 2;
-      const cy = vv.offsetTop + vv.height / 2;
-      card.style.position = 'fixed';
-      card.style.left = cx + 'px';
-      card.style.top = cy + 'px';
-      card.style.transform = 'translate(-50%, -50%)';
-      card.style.margin = '0';
-      card.style.maxWidth = Math.min(320, vv.width - 32) + 'px';
-      card.style.width = '100%';
-    } else {
-      card.style.position = '';
-      card.style.left = '';
-      card.style.top = '';
-      card.style.transform = '';
-      card.style.margin = '';
-      card.style.maxWidth = '';
-      card.style.width = '';
-    }
-  }
-
-  function clearCardPosition() {
-    const card = $('#ophLoading .oph-loading-card');
-    if (!card) return;
-    card.style.position = '';
-    card.style.left = '';
-    card.style.top = '';
-    card.style.transform = '';
-    card.style.margin = '';
-    card.style.maxWidth = '';
-    card.style.width = '';
-  }
-
-  function showLoading(text) {
-    ensureOverlay();
-    busyCount++;
-    $('#ophLoadingText').textContent = text || 'Loading…';
-    $('#ophLoading').hidden = false;
-    positionCard();
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', positionCard);
-      window.visualViewport.addEventListener('scroll', positionCard);
-    }
-  }
-
-  function hideLoading() {
-    busyCount = Math.max(0, busyCount - 1);
-    if (!busyCount) {
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', positionCard);
-        window.visualViewport.removeEventListener('scroll', positionCard);
-      }
-      clearCardPosition();
-      if ($('#ophLoading')) $('#ophLoading').hidden = true;
-    }
-  }
-
-  if (typeof api === 'function') {
-    const originalApi = api;
-    const loadingActions = new Set(['createGame','join','assignTeams','uploadPhoto','ready','saveScore']);
-    api = async function(action, payload = {}) {
-      const useOverlay = loadingActions.has(action);
-      if (useOverlay) showLoading(loadingText(action));
-      try {
-        return await originalApi(action, payload);
-      } finally {
-        if (useOverlay) hideLoading();
-      }
-    };
-  }
-
-  function updateHostButton() {
-    const btn = $('#assignBtn');
-    if (!btn || typeof G === 'undefined' || !G || G.phase !== 'LOBBY') return;
-
-    btn.hidden = false;
-
-    if (G.isHost) {
-      btn.disabled = false;
-      btn.classList.remove('host-locked');
-      btn.textContent = 'Close joining & randomly assign teams';
-      btn.title = 'Only the game creator can perform this action.';
-    } else {
-      btn.disabled = true;
-      btn.classList.add('host-locked');
-      btn.textContent = '🔒 Close joining & randomly assign teams';
-      btn.title = 'Only the game creator can perform this action.';
-    }
-
-    let note = $('#hostPermissionNote');
-    if (!note) {
-      note = document.createElement('p');
-      note.id = 'hostPermissionNote';
-      note.className = 'host-permission-note';
-      btn.insertAdjacentElement('afterend', note);
-    }
-    note.textContent = G.isHost
-      ? 'You created this game. Close joining when everyone has arrived.'
-      : 'Only the game creator can close joining and assign teams.';
-  }
-
-  ensureOverlay();
-  setInterval(updateHostButton, 350);
-})();
+Once you put this back into `ui-enhancements.css`[cite: 2, 4] and keep the JavaScript in `ui-enhancements.js`[cite: 4, 6], test uploading a photo on your phone and let me know how it looks!
