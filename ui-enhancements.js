@@ -32,20 +32,63 @@
     })[action] || 'Loading…';
   }
 
+  function positionCard() {
+    const card = $('#ophLoading .oph-loading-card');
+    if (!card) return;
+    const vv = window.visualViewport;
+    if (vv) {
+      const cx = vv.offsetLeft + vv.width / 2;
+      const cy = vv.offsetTop + vv.height / 2;
+      card.style.position = 'fixed';
+      card.style.left = cx + 'px';
+      card.style.top = cy + 'px';
+      card.style.transform = 'translate(-50%, -50%)';
+      card.style.margin = '0';
+      card.style.maxWidth = Math.min(320, vv.width - 32) + 'px';
+      card.style.width = '100%';
+    } else {
+      clearCardPosition();
+    }
+  }
+
+  function clearCardPosition() {
+    const card = $('#ophLoading .oph-loading-card');
+    if (!card) return;
+    card.style.position = '';
+    card.style.left = '';
+    card.style.top = '';
+    card.style.transform = '';
+    card.style.margin = '';
+    card.style.maxWidth = '';
+    card.style.width = '';
+  }
+
   function showLoading(text) {
     ensureOverlay();
     busyCount++;
     $('#ophLoadingText').textContent = text || 'Loading…';
     $('#ophLoading').hidden = false;
+    positionCard();
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', positionCard);
+      window.visualViewport.addEventListener('scroll', positionCard);
+    }
   }
 
   function hideLoading() {
     busyCount = Math.max(0, busyCount - 1);
-    if (!busyCount && $('#ophLoading')) $('#ophLoading').hidden = true;
+    if (!busyCount) {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', positionCard);
+        window.visualViewport.removeEventListener('scroll', positionCard);
+      }
+      clearCardPosition();
+      if ($('#ophLoading')) $('#ophLoading').hidden = true;
+    }
   }
 
-  // Wrap the existing global api() function without changing game logic.
-  // Polling/state/photo reads remain silent, while player-triggered writes show feedback.
+  window.OPH_UI = { showLoading, hideLoading };
+
   if (typeof api === 'function') {
     const originalApi = api;
     const loadingActions = new Set(['createGame','join','assignTeams','uploadPhoto','ready','saveScore']);
@@ -64,7 +107,6 @@
     const btn = $('#assignBtn');
     if (!btn || typeof G === 'undefined' || !G || G.phase !== 'LOBBY') return;
 
-    // Show the same control to everyone so non-hosts know what they are waiting for.
     btn.hidden = false;
 
     if (G.isHost) {
