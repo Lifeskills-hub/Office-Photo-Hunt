@@ -1,0 +1,1 @@
+const C='oph-v1',A=['./','index.html','styles.css','app.js','imageMatcher.js','manifest.json'];self.addEventListener('install',e=>e.waitUntil(caches.open(C).then(c=>c.addAll(A))));self.addEventListener('fetch',e=>{if(e.request.method==='GET'&&!e.request.url.includes('script.google'))e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})
