@@ -1,9 +1,54 @@
-/* Office Photo Hunt UI enhancements v8.4 */
-.oph-loading[hidden]{display:none!important}
-.oph-loading{position:fixed!important;inset:0!important;z-index:2147483647!important;background:rgba(10,20,38,.72)!important;margin:0!important;padding:0!important;overflow:hidden!important}
-/* Use viewport-coordinate translation instead of flex/fixed-centering. This avoids page/parent layout offsets. */
-.oph-loading-card{position:fixed!important;left:50vw!important;top:50vh!important;width:min(320px,calc(100vw - 32px))!important;max-width:none!important;height:auto!important;margin:0!important;padding:24px 20px!important;box-sizing:border-box!important;transform:translate(-50%,-50%)!important;background:#fff!important;color:#14213d!important;border-radius:18px!important;text-align:center!important;box-shadow:0 18px 50px rgba(0,0,0,.28)!important}
-.oph-loading-card strong{display:block;font-size:1.15rem;margin:12px 0 5px}.oph-loading-card small{display:block;color:#667085;line-height:1.4}.oph-spinner{display:block!important;width:48px!important;height:48px!important;margin:0 auto 8px!important;border:5px solid #dbe7fb!important;border-top-color:#1760d8!important;border-radius:50%!important;animation:ophSpin .8s linear infinite!important}@keyframes ophSpin{to{transform:rotate(360deg)}}
-#assignBtn.host-locked,#assignBtn:disabled{background:#98a2b3!important;color:#f8fafc!important;cursor:not-allowed;opacity:.82}.host-permission-note{margin:8px 0 0;color:#667085;font-size:.88rem;text-align:center}
-button.ready-submitted,button.ready-submitted:disabled{background:#15803d!important;color:#fff!important;opacity:1!important;border-color:#15803d!important}
-@media(prefers-reduced-motion:reduce){.oph-spinner{animation-duration:1.8s!important}}@media(prefers-color-scheme:dark){.oph-loading-card{background:#172033!important;color:#f8fafc!important}.oph-loading-card small,.host-permission-note{color:#98a2b3}}
+/* Office Photo Hunt v8.5 - host button + loading fix
+   Replace ui-enhancements.js with this file (rename to ui-enhancements.js).
+*/
+(()=>{
+  const $ = s => document.querySelector(s);
+  let busy = 0;
+
+  function ensureOverlay(){
+    let el=$('#ophLoading');
+    if(!el){
+      el=document.createElement('div');
+      el.id='ophLoading'; el.className='oph-loading'; el.hidden=true;
+      el.innerHTML='<div class="oph-loading-card" role="status" aria-live="polite" aria-busy="true"><div class="oph-spinner"></div><strong id="ophLoadingText">Loading…</strong><small>Please wait. Do not close or refresh this page.</small></div>';
+    }
+    // Critical: overlay must be a direct child of BODY, never inside a transformed page container.
+    if(el.parentElement!==document.body) document.body.appendChild(el);
+  }
+  const labels={createGame:'Creating game…',join:'Joining game…',assignTeams:'Randomly assigning teams…',uploadPhoto:'Uploading photo…',ready:'Preparing photo hunt…',saveScore:'Saving match score…'};
+  function showLoading(t){ensureOverlay();busy++;$('#ophLoadingText').textContent=t||'Loading…';$('#ophLoading').hidden=false;document.documentElement.classList.add('oph-busy')}
+  function hideLoading(){busy=Math.max(0,busy-1);if(!busy){$('#ophLoading').hidden=true;document.documentElement.classList.remove('oph-busy')}}
+  window.OPH_UI={showLoading,hideLoading};
+
+  // app.js defines api with `let`/function in global script scope; wrap it after app.js loads.
+  if(typeof api==='function'){
+    const originalApi=api;
+    const actions=new Set(Object.keys(labels));
+    api=async function(action,payload={}){
+      const loading=actions.has(action);
+      if(loading) showLoading(labels[action]);
+      try{return await originalApi(action,payload)}finally{if(loading) hideLoading()}
+    };
+  }
+
+  function syncLobby(){
+    if(typeof G==='undefined'||!G||G.phase!=='LOBBY') return;
+    const btn=$('#assignBtn'); if(!btn) return;
+    // app.js currently hides this for non-hosts. Override that presentation here.
+    btn.hidden=false;
+    if(G.isHost===true){
+      btn.disabled=false;
+      btn.classList.remove('host-locked');
+      btn.textContent='Close joining & randomly assign teams';
+    }else{
+      btn.disabled=true;
+      btn.classList.add('host-locked');
+      btn.textContent='🔒 Close joining & randomly assign teams';
+    }
+    const note=$('#hostPermissionNote');
+    if(note) note.textContent=G.isHost===true?'You created this game. Close joining when everyone has arrived.':'Only the game creator can close joining and assign teams.';
+  }
+
+  ensureOverlay();
+  setInterval(syncLobby,200);
+})();
