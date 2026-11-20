@@ -108,6 +108,13 @@ button:disabled {
   background: #98a2b3;
 }
 
+button.ready-submitted,
+button.ready-submitted:disabled {
+  background: #15803d;
+  color: #fff;
+  opacity: 1;
+}
+
 .secondary {
   background: #e8f0ff;
   color: #174ea6;
@@ -141,10 +148,11 @@ button:disabled {
   align-items: center;
 }
 
+/* 1 card per row on phones, 2 on medium screens, 5 on desktop */
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 11px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
   min-width: 0;
   max-width: 100%;
 }
@@ -173,7 +181,7 @@ button:disabled {
 }
 
 .photo-info {
-  padding: 10px;
+  padding: 12px;
   min-width: 0;
 }
 
@@ -249,6 +257,12 @@ button:disabled {
 
 #gameQr img {
   margin: 10px auto;
+}
+
+@media (min-width: 520px) {
+  .photo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 680px) {
