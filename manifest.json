@@ -1,9 +1,1 @@
-{
-  "name": "Office Photo Hunt",
-  "short_name": "Photo Hunt",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#f2f6fc",
-  "theme_color": "#175cd3",
-  "icons": []
-}
+{"name":"Office Photo Hunt","short_name":"Photo Hunt","display":"standalone","start_url":"./","theme_color":"#174ea6"}
