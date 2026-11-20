@@ -5,20 +5,26 @@
 
 .oph-loading {
   position: fixed !important;
-  inset: 0 !important;
-  width: 100% !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
   height: 100dvh !important;
   z-index: 9999 !important;
-  background: rgba(10, 20, 38, .64);
-  display: grid !important;
-  place-items: center !important;
+  background: rgba(10, 20, 38, .68);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   padding: 20px;
   margin: 0 !important;
+  transform: none !important;
   overflow: hidden;
   backdrop-filter: blur(2px);
 }
 
 .oph-loading-card {
+  position: static !important;
   width: min(320px, calc(100vw - 40px));
   max-width: 100%;
   background: #fff;
@@ -27,7 +33,11 @@
   padding: 24px 20px;
   text-align: center;
   box-shadow: 0 18px 50px rgba(0, 0, 0, .28);
-  margin: 0 !important;
+  margin: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
   transform: none !important;
 }
 
@@ -91,6 +101,3 @@
     color: #98a2b3;
   }
 }
-```[cite: 2]
-
-Once you put this back into `ui-enhancements.css`[cite: 2, 4] and keep the JavaScript in `ui-enhancements.js`[cite: 4, 6], test uploading a photo on your phone and let me know how it looks!
