@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#174ea6">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <title>Office Photo Hunt</title>
+
+  <link rel="manifest" href="manifest.json">
+  <!-- App-style UI: styles.css is the new app-style sheet.
+       winner.css and ui-enhancements.css are unchanged from the repo. -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="winner.css">
+  <link rel="stylesheet" href="ui-enhancements.css">
+</head>
+
+<body>
+
+<!-- Fixed app header: never scrolls away.
+     The timer / phase stays pinned at the top on every screen. -->
+<header>
+  <div>
+    <h1>Office Photo Hunt</h1>
+    <small id="phaseLabel">Create or join</small>
+  </div>
+
+  <b id="timer">LOBBY</b>
+</header>
+
+<main>
+
+  <!-- =========================================
+       HOME
+       No pinned action bar here: each form keeps its own
+       submit button inside the form, inside the scrolling area.
+  ========================================== -->
+  <section id="home" class="screen active">
+    <div class="screen-scroll">
+
+      <div class="hero">
+        <h2>Find your team. Find the place.</h2>
+        <p>
+          Create a new game, or join an existing game
+          using its Game Code or QR code.
+        </p>
+      </div>
+
+      <div class="grid">
+
+        <form class="card" id="createForm">
+          <h3>Create a new game</h3>
+
+          <label>
+            Your nickname
+            <input
+              id="createNickname"
+              maxlength="24"
+              autocomplete="nickname"
+              required
+            >
+          </label>
+
+          <button type="submit">
+            Create game
+          </button>
+        </form>
+
+
+        <form class="card" id="joinForm">
+          <h3>Join an existing game</h3>
+
+          <label>
+            Game code
+            <input
+              id="gameCodeInput"
+              maxlength="6"
+              autocapitalize="characters"
+              autocomplete="off"
+              required
+            >
+          </label>
+
+          <label>
+            Your nickname
+            <input
+              id="nickname"
+              maxlength="24"
+              autocomplete="nickname"
+              required
+            >
+          </label>
+
+          <button type="submit">
+            Join game
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =========================================
+       WAITING LOBBY
+       The assign-teams button is pinned in the bottom action bar.
+  ========================================== -->
+  <section id="lobby" class="screen">
+    <div class="screen-scroll">
+
+      <div class="card center">
+
+        <span class="badge">WAITING LOBBY</span>
+
+        <h2>Game code</h2>
+
+        <div id="lobbyCode" class="code"></div>
+
+        <div id="gameQr"></div>
+
+        <p>
+          Share this QR code or Game Code with everyone playing.
+        </p>
+
+        <button
+          id="shareBtn"
+          class="secondary"
+          type="button"
+        >
+          Share game link
+        </button>
+
+        <h3>
+          Players joined:
+          <span id="joinedCount">0</span>
+        </h3>
+
+        <div id="joinedNames"></div>
+
+        <p id="waitingHost">
+          Waiting for the game creator to assign teams.
+        </p>
+
+      </div>
+    </div>
+
+    <!-- Pinned bottom action bar (lobby) -->
+    <div class="action-bar">
+      <!--
+        This button remains in the DOM for EVERY player.
+        app.js supplies G.isHost.
+        ui-enhancements.js makes it:
+        - enabled for the creator/host
+        - grey + disabled for everyone else
+      -->
+      <button
+        id="assignBtn"
+        type="button"
+        disabled
+      >
+        Close joining &amp; randomly assign teams
+      </button>
+
+      <p id="hostPermissionNote" class="host-permission-note">
+        Waiting for game creator permissions…
+      </p>
+    </div>
+  </section>
+
+
+  <!-- =========================================
+       TEAM / PHOTO SUBMISSION
+       The ready button is pinned in the bottom action bar.
+  ========================================== -->
+  <section id="team" class="screen">
+    <div class="screen-scroll">
+
+      <div class="card">
+
+        <span class="badge">YOUR TEAM</span>
+
+        <h2 id="teamName"></h2>
+
+        <p>Find these teammates physically:</p>
+
+        <div id="members"></div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="row">
+          <h2>Submit 5 photos</h2>
+          <b id="photoCount">0/5</b>
+        </div>
+
+        <p>
+          All members share the same five photo slots.
+          Uploaded previews update automatically for the team.
+        </p>
+
+        <div id="photoSlots" class="photo-grid"></div>
+
+      </div>
+
+
+      <div class="card">
+        <h2>Leaderboard</h2>
+        <div id="teamBoard"></div>
+      </div>
+
+    </div>
+
+    <!-- Pinned bottom action bar (team) -->
+    <div class="action-bar">
+      <button
+        id="readyBtn"
+        type="button"
+        disabled
+      >
+        Our 5 photos are ready
+      </button>
+
+      <p id="readyText"></p>
+    </div>
+  </section>
+
+
+  <!-- =========================================
+       PHOTO HUNT
+       Targets and leaderboard scroll inside .screen-scroll;
+       the header timer stays pinned at the top.
+  ========================================== -->
+  <section id="hunt" class="screen">
+    <div class="screen-scroll">
+
+      <div class="card">
+
+        <div class="row">
+          <h2>Photo Hunt</h2>
+          <b id="totalScore">0/500</b>
+        </div>
+
+        <p>
+          Open each target, take a matching photo and compare it.
+          Unlimited attempts are allowed. Only the highest score
+          for each target is retained.
+        </p>
+
+        <div id="targets" class="photo-grid"></div>
+
+      </div>
+
+
+      <div class="card">
+        <h2>Leaderboard</h2>
+        <div id="huntBoard"></div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- =========================================
+       FINISHED / WINNER
+
+       winner-patch.js will update this area and
+       show the champion + this player's own team.
+  ========================================== -->
+  <section id="finished" class="screen">
+    <div class="screen-scroll">
+
+      <div class="card champion-card">
+
+        <div class="trophy">🏆</div>
+
+        <p id="finishReason"></p>
+
+        <h1 id="championName">
+          Champion
+        </h1>
+
+        <div
+          id="championScore"
+          class="champion-score"
+        ></div>
+
+      </div>
+
+
+      <div class="card my-team-card">
+
+        <div class="my-team-label">
+          YOUR TEAM
+        </div>
+
+        <h2 id="finalMyTeam">
+          Team
+        </h2>
+
+        <div
+          id="finalMyTeamResult"
+          class="my-team-result"
+        ></div>
+
+      </div>
+
+
+      <div class="card">
+        <h2>Final Leaderboard</h2>
+        <div id="finalBoard"></div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+
+<!-- =========================================
+     IMAGE MATCHING — now a bottom sheet.
+     It slides up from the bottom of the screen instead of
+     opening as a centred, page-scrolling popup.
+     All IDs are unchanged, so app.js works as before.
+========================================== -->
+<div id="modal" class="modal" hidden>
+
+  <div class="modal-card">
+
+    <button
+      id="closeModal"
+      class="close"
+      type="button"
+      aria-label="Close"
+    >
+      ×
+    </button>
+
+    <h2 id="modalTitle"></h2>
+
+    <p>Original target</p>
+
+    <img
+      id="targetImage"
+      class="large-preview"
+      alt="Original target photo"
+    >
+
+    <label class="camera">
+      Take matching photo
+
+      <input
+        id="attemptInput"
+        type="file"
+        accept="image/*"
+        capture="environment"
+      >
+    </label>
+
+    <p>Your attempt</p>
+
+    <img
+      id="attemptPreview"
+      class="large-preview"
+      alt="Matching photo attempt"
+      hidden
+    >
+
+    <!-- Compare stays pinned at the bottom of the sheet -->
+    <div class="sheet-action">
+      <button
+        id="compareBtn"
+        type="button"
+        disabled
+      >
+        Compare photos
+      </button>
+
+      <div
+        id="matchResult"
+        aria-live="polite"
+      ></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- Existing toast notifications -->
+<div
+  id="toast"
+  role="status"
+  aria-live="polite"
+></div>
+
+
+<!--
+  Global loading overlay.
+  ui-enhancements.js also creates this automatically if absent,
+  but keeping it here prevents any delay before the first use.
+-->
+<div
+  id="ophLoading"
+  class="oph-loading"
+  hidden
+>
+
+  <div
+    class="oph-loading-card"
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+  >
+
+    <div
+      class="oph-spinner"
+      aria-hidden="true"
+    ></div>
+
+    <strong id="ophLoadingText">
+      Loading…
+    </strong>
+
+    <small>
+      Please wait. Do not close or refresh this page.
+    </small>
+
+  </div>
+</div>
+
+
+<!-- =========================================
+     JAVASCRIPT
+
+     Loading order is important.
+========================================== -->
+
+<!-- QR generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- Stricter v9 image matching -->
+<script src="imageMatcher.js"></script>
+
+<!-- Main game -->
+<script src="app.js"></script>
+
+<!-- Winner + YOUR TEAM final screen -->
+<script src="winner-patch.js"></script>
+
+<!-- Loading overlay + host/non-host button behaviour -->
+<script src="ui-enhancements.js"></script>
+
+</body>
+</html>

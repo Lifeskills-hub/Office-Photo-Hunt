@@ -1,0 +1,455 @@
+/* ============================================================
+   Office Photo Hunt — app-style styles.css
+
+   Drop-in replacement for the repo's styles.css.
+   Use together with the matching app-style index.html.
+   winner.css and ui-enhancements.css are NOT changed and
+   still load after this file, exactly as before.
+
+   What makes it app-style:
+   - The page itself never scrolls. The app fills exactly
+     100dvh (the visible phone screen height).
+   - The header (title + timer) is pinned at the top.
+   - The main action button on the lobby and team screens
+     is pinned in a bottom action bar.
+   - Only the middle area (.screen-scroll) scrolls, and
+     only inside itself.
+   - The photo-compare popup is a bottom sheet that slides
+     up from the bottom of the screen.
+   - Safe-area padding for phone notches / home indicators,
+     bigger touch targets, and no pull-to-refresh / bounce
+     scrolling the whole page away.
+   ============================================================ */
+
+:root {
+  --blue: #174ea6;
+  --blue-bright: #1760d8;
+  --bg: #f2f6fc;
+  --green: #15803d;
+  --text: #14213d;
+  --border: #dbe3ef;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* --- App shell: the page is locked to the screen height --- */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;               /* the page itself never scrolls */
+  overscroll-behavior: none;      /* no pull-to-refresh / bounce */
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;                 /* exactly the visible screen */
+}
+
+/* --- Pinned header --- */
+
+header {
+  flex: none;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(20, 33, 61, .18);
+}
+
+h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+header small {
+  opacity: .85;
+}
+
+/* Timer as a pill, so the countdown reads like an app status chip */
+#timer {
+  flex: none;
+  background: rgba(255, 255, 255, .18);
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .04em;
+}
+
+/* --- Main area: holds one screen, which fills the rest --- */
+
+main {
+  flex: 1;
+  min-height: 0;                  /* lets the inner area scroll */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+/* --- Screens --- */
+
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The ONLY part that scrolls: the middle of each screen */
+.screen-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px 14px 20px;
+}
+
+/* --- Pinned bottom action bar --- */
+
+.action-bar {
+  flex: none;
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, .97);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(20, 33, 61, .07);
+}
+
+.action-bar button {
+  margin-top: 0;
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+.action-bar p {
+  margin: 7px 2px 0;
+  font-size: .85rem;
+  text-align: center;
+  color: #475467;
+}
+
+.action-bar .host-permission-note {
+  margin-top: 7px;
+}
+
+/* --- Content basics (same look as before, app spacing) --- */
+
+.hero {
+  padding: 14px 5px 4px;
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 4px 18px rgba(35, 68, 34, .13);
+  min-width: 0;
+}
+
+.card:last-child {
+  margin-bottom: 0;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin: 12px 0;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  margin-top: 5px;
+  font: inherit;
+  font-size: 16px;   /* 16px stops iOS Safari auto-zooming on focus */
+}
+
+
+button,
+.camera {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--blue-bright);
+  color: #fff;
+  font-weight: 800;
+  font: inherit;
+  text-align: center;
+  margin-top: 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:active,
+.camera:active {
+  filter: brightness(.93);
+}
+
+.camera {
+  position: relative;
+}
+
+.camera input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+button:disabled {
+  background: #98a2b3;
+  cursor: not-allowed;
+}
+
+button.ready-submitted,
+button.ready-submitted:disabled {
+  background: var(--green);
+  color: #fff;
+  opacity: 1;
+}
+
+.secondary {
+  background: #e8f0ff;
+  color: var(--blue);
+}
+
+.center {
+  text-align: center;
+}
+
+.code {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: .15em;
+  color: var(--blue);
+}
+
+.badge,
+.chip {
+  display: inline-block;
+  padding: 7px 10px;
+  border-radius: 99px;
+  background: #e8f0ff;
+  color: var(--blue);
+  font-weight: 800;
+  margin: 3px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* --- Photos --- */
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.photo-card {
+  border: 1px solid #d9e0ea;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8fafc;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Only show image preview when not [hidden] */
+.photo-card img:not([hidden]) {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+/* Keep empty placeholder hidden so un-uploaded cards stay compact */
+.photo-card .placeholder {
+  display: none !important;
+}
+
+.photo-info {
+  padding: 10px;
+  min-width: 0;
+}
+
+.photo-info .camera {
+  margin-top: 8px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+
+.score {
+  font-size: 1.3rem;
+  color: var(--green);
+  font-weight: 900;
+}
+
+
+/* --- Leaderboard --- */
+
+.board-row {
+  display: grid;
+  grid-template-columns: 35px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.board-row:last-child {
+  border-bottom: 0;
+}
+
+/* --- Photo compare: bottom sheet instead of a popup --- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .67);
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;          /* sheet anchors to the bottom */
+  justify-content: center;
+}
+
+.modal[hidden] {
+  display: none !important;
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+  border-radius: 22px 22px 0 0;
+  padding: 18px 18px calc(14px + env(safe-area-inset-bottom));
+  animation: sheet-up .22s ease-out;
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(24px); opacity: .6; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-card { animation: none; }
+}
+
+/* Compare button stays reachable at the bottom of the sheet */
+.sheet-action {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding-top: 8px;
+}
+
+.close {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  background: #e8edf5;
+  color: #111;
+  font-size: 1.4rem;
+}
+
+.large-preview {
+  width: 100%;
+  max-height: 34dvh;
+  object-fit: contain;
+  background: #111;
+  border-radius: 12px;
+}
+
+#matchResult {
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 900;
+  padding: 12px 6px 4px;
+}
+
+/* --- Toast: sits above the bottom action bar --- */
+
+#toast {
+  display: none;
+  position: fixed;
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  background: #111;
+  color: #fff;
+  padding: 11px 15px;
+  border-radius: 10px;
+  z-index: 30;
+  text-align: center;
+}
+
+#gameQr img {
+  margin: 10px auto;
+}
+
+/* --- Wider screens: keep the app column centred, grids open up --- */
+
+@media (min-width: 680px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .modal-card {
+    border-radius: 22px;
+    margin-bottom: 18px;
+  }
+}
